@@ -1,0 +1,8 @@
+kafka:
+  user:
+    bootstrap-servers: localhost:9092
+  consumer:
+    group:
+      id: "notification.consumer"
+server:
+  port: 8082

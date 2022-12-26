@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:33310/user?useUnicode=yes&characterEncoding=UTF-8&rewriteBatchedStatements=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      maximum-pool-size: 50
+      max-lifetime: 30000
+      username: jerry
+      password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+kafka:
+  user:
+    bootstrap-servers: localhost:9092

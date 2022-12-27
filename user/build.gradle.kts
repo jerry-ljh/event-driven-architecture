@@ -50,6 +50,7 @@ dependencies {
         }
     }
     implementation("org.springframework.kafka:spring-kafka:2.9.0")
+    implementation("com.vladmihalcea:hibernate-types-52:2.16.1")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.kotest:kotest-runner-junit5:4.6.3")
     testImplementation("io.kotest:kotest-assertions-core:4.6.3")

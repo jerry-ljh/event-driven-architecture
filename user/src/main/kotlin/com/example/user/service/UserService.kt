@@ -2,7 +2,7 @@ package com.example.user.service
 
 import com.example.user.domain.User
 import com.example.user.dto.Action
-import com.example.user.dto.UserEvent
+import com.example.user.dto.UserEventRequest
 import com.example.user.repository.UserJpaRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
@@ -30,8 +30,6 @@ class UserService(
         return newUser
     }
 
-
-
     @Transactional
     fun createUserWithEvent(userId: String, userName: String): User {
         val user = userRepository.findByUserId(userId)
@@ -39,7 +37,7 @@ class UserService(
         val newUser = User(userId = userId, name = userName)
         userRepository.save(newUser)
         log.info("user 생성 $userId")
-        applicationEventPublisher.publishEvent(UserEvent(id = newUser.id, action = Action.CREATE))
+        applicationEventPublisher.publishEvent(UserEventRequest(id = newUser.id, action = Action.CREATE))
         return newUser
     }
 }

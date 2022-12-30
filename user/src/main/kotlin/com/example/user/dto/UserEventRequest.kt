@@ -5,7 +5,7 @@ import com.example.user.util.toMap
 
 data class UserEventRequest(
     val id: Long,
-    val action: Action
+    val action: Action,
 ) {
     fun toEventEntity(): UserEvent {
         return UserEvent(event = this.toMap())

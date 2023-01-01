@@ -8,11 +8,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.event.TransactionPhase
-import org.springframework.transaction.event.TransactionalEventListener
 
 @Service
 class UserEventService(
@@ -23,17 +20,15 @@ class UserEventService(
     private val log = LoggerFactory.getLogger(this::class.simpleName)
     private val topic = "user.v1"
 
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    @Transactional
     fun saveUserEvent(userEventRequest: UserEventRequest) {
         val userEvent = userEventJpaRepository.save(userEventRequest.toEventEntity())
         log.info("save userEvent $userEventRequest")
         applicationEventPublisher.publishEvent(UserEventPayload(id = userEvent.id))
     }
 
-    @Async
     @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun createKafkaUserEvent(userEventPayload: UserEventPayload) {
+    fun publishUserEvent(userEventPayload: UserEventPayload) {
         val userEvent = userEventJpaRepository.findByIdOrNull(userEventPayload.id) ?: return
         val value = userEvent.event.toJson()
         kafkaTemplate.send(topic, value)

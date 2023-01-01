@@ -33,7 +33,7 @@ class UserEventService(
     @Async
     @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun createUserEvent(userEventPayload: UserEventPayload) {
+    fun createKafkaUserEvent(userEventPayload: UserEventPayload) {
         val userEvent = userEventJpaRepository.findByIdOrNull(userEventPayload.id) ?: return
         val value = userEvent.event.toJson()
         kafkaTemplate.send(topic, value)

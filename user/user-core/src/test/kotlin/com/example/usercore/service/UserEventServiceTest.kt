@@ -6,7 +6,7 @@ import com.example.usercore.domain.UserEvent
 import com.example.usercore.dto.Action
 import com.example.usercore.dto.UserEventPayload
 import com.example.usercore.dto.UserEventRequest
-import com.example.usercore.repository.UserEventJpaRepository
+import com.example.usercore.repository.UserEventRepository
 import com.example.usercore.repository.UserJpaRepository
 import com.example.usercore.util.toJson
 import com.example.usercore.util.toMap
@@ -38,7 +38,7 @@ class UserEventServiceTest : TestConfig() {
     lateinit var userJpaRepository: UserJpaRepository
 
     @SpykBean
-    lateinit var userEventJpaRepository: UserEventJpaRepository
+    lateinit var userEventRepository: UserEventRepository
 
     @MockkBean(relaxed = true)
     lateinit var kafkaTemplate: KafkaTemplate<String, String>
@@ -46,7 +46,7 @@ class UserEventServiceTest : TestConfig() {
     @BeforeEach
     fun clean() {
         userJpaRepository.deleteAllInBatch()
-        userEventJpaRepository.deleteAllInBatch()
+        userEventRepository.deleteAllInBatch()
         clearAllMocks()
     }
 
@@ -61,7 +61,7 @@ class UserEventServiceTest : TestConfig() {
         // when
         sut.saveUserEvent(userEventRequest)
         // then
-        val userEvent = userEventJpaRepository.findAll().first()
+        val userEvent = userEventRepository.findAll().first()
         userEvent.isPublished shouldBe false
         userEvent.event["id"] shouldBe userEventRequest.id
         userEvent.event["action"] shouldBe userEventRequest.action.name
@@ -86,7 +86,7 @@ class UserEventServiceTest : TestConfig() {
     fun `kafka 이벤트를 발행한다`() {
         // given
         val userEventRequest = UserEventRequest(id = 1, action = Action.CREATE)
-        val userEvent = userEventJpaRepository.save(UserEvent(event = userEventRequest.toMap()))
+        val userEvent = userEventRepository.save(UserEvent(event = userEventRequest.toMap()))
         val userEventPayload = UserEventPayload(id = userEvent.id)
         // when
         sut.publishUserEvent(userEventPayload)
@@ -98,12 +98,12 @@ class UserEventServiceTest : TestConfig() {
     fun `kafka 이벤트 발행에 성공하면 userEvent isPublished=true로 저장한다`() {
         // given
         val userEventRequest = UserEventRequest(id = 1, action = Action.CREATE)
-        val userEvent = userEventJpaRepository.save(UserEvent(event = userEventRequest.toMap()))
+        val userEvent = userEventRepository.save(UserEvent(event = userEventRequest.toMap()))
         val userEventPayload = UserEventPayload(id = userEvent.id)
         // when
         sut.publishUserEvent(userEventPayload)
         // then
         verify { kafkaTemplate.send(any(), userEvent.event.toJson()) }
-        userEventJpaRepository.findByIdOrNull(userEvent.id)!!.isPublished shouldBe true
+        userEventRepository.findByIdOrNull(userEvent.id)!!.isPublished shouldBe true
     }
 }

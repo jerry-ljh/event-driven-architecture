@@ -10,7 +10,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -29,13 +28,12 @@ class UserEventService(
         applicationEventPublisher.publishEvent(UserEventPayload(id = userEvent.id))
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun publishUserEvent(userEventPayload: UserEventPayload) {
         val userEvent = userEventRepository.findByIdOrNull(userEventPayload.id) ?: return
         val value = userEvent.event.toJson()
         kafkaTemplate.send(topic, value)
         log.info("published $topic, $value")
-        userEvent.isPublished = true
+        userEventRepository.updatePublishUserEventTrue(userEvent.id)
     }
 
     @Transactional(readOnly = true)

@@ -3,7 +3,7 @@ package com.example.usercore.service
 import com.example.usercore.TestConfig
 import com.example.usercore.dto.Action
 import com.example.usercore.dto.UserEventRequest
-import com.example.usercore.repository.UserEventJpaRepository
+import com.example.usercore.repository.UserEventRepository
 import com.example.usercore.repository.UserJpaRepository
 import com.example.usercore.util.toMap
 import com.ninjasquad.springmockk.MockkBean
@@ -34,7 +34,7 @@ class UserServiceTest : TestConfig() {
     lateinit var userJpaRepository: UserJpaRepository
 
     @SpykBean
-    lateinit var userEventJpaRepository: UserEventJpaRepository
+    lateinit var userEventRepository: UserEventRepository
 
     @MockkBean(relaxed = true)
     lateinit var kafkaTemplate: KafkaTemplate<String, String>
@@ -42,7 +42,7 @@ class UserServiceTest : TestConfig() {
     @BeforeEach
     fun clean() {
         userJpaRepository.deleteAllInBatch()
-        userEventJpaRepository.deleteAllInBatch()
+        userEventRepository.deleteAllInBatch()
         clearAllMocks()
     }
 
@@ -62,7 +62,7 @@ class UserServiceTest : TestConfig() {
         sut.createUserWithEvent(userId = "jerry", userName = "lee")
         // then
         val eventRequest = events.stream(UserEventRequest::class.java).toList().first()
-        val event = userEventJpaRepository.findAll().first().event
+        val event = userEventRepository.findAll().first().event
         event shouldBe eventRequest.toMap()
     }
 
@@ -82,7 +82,7 @@ class UserServiceTest : TestConfig() {
     @Test
     fun `유저 이벤트 저장에 실패하면 유저 생성 트랜잭션이 롤백된다`() {
         // givne
-        every { userEventJpaRepository.save(any()) } throws RuntimeException("이벤트 저장 실패")
+        every { userEventRepository.save(any()) } throws RuntimeException("이벤트 저장 실패")
         // when
         assertThrows<RuntimeException> {
             sut.createUserWithEvent(userId = "jerry", userName = "lee")

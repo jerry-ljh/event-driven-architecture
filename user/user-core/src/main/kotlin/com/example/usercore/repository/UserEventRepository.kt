@@ -4,6 +4,8 @@ import com.example.usercore.domain.QUserEvent.userEvent
 import com.example.usercore.domain.UserEvent
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
@@ -22,5 +24,13 @@ class UserEventRepository(
             .where(userEvent.isPublished.eq(false))
             .limit(100)
             .fetch()
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun updatePublishUserEventTrue(id: Long): Long {
+        return update(userEvent)
+            .where(userEvent.id.eq(id))
+            .set(userEvent.isPublished, true)
+            .execute()
     }
 }

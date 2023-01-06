@@ -6,3 +6,4 @@ pluginManagement {
     }
 }
 rootProject.name = "user"
+include("user-core", "user-api", "user-batch")
